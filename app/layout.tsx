@@ -24,6 +24,9 @@ export const metadata: Metadata = {
     statusBarStyle: 'default',
     title: 'Antigravity',
   },
+};
+
+export const viewport = {
   themeColor: '#7c3aed',
 };
 
