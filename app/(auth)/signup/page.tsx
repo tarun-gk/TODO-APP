@@ -26,7 +26,7 @@ export default function SignupPage() {
   );
 
   return (
-    <div className="bg-white dark:bg-zinc-900 py-8 px-4 shadow sm:rounded-lg sm:px-10">
+    <div className="bg-white dark:bg-zinc-900 py-8 px-4 shadow sm:rounded-lg sm:px-10 text-zinc-900 dark:text-zinc-100">
       <form action={formAction} className="space-y-6">
         <div>
           <Label htmlFor="display_name">Display Name</Label>

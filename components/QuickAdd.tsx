@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { addTask } from '@/app/actions/taskActions';
 import { Plus } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
+import toast from 'react-hot-toast';
 
 export default function QuickAdd() {
   const [title, setTitle] = useState('');
@@ -17,8 +18,10 @@ export default function QuickAdd() {
     try {
       await addTask(title.trim());
       setTitle('');
+      toast.success('Task added');
     } catch (error) {
       console.error(error);
+      toast.error('Failed to add task');
     } finally {
       setIsSubmitting(false);
     }

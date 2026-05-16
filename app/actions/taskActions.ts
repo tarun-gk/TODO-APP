@@ -1,77 +1,69 @@
+// app/actions/taskActions.ts
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { format } from 'date-fns';
+import { getDb } from '@/lib/mongodb/client';
+import { ObjectId } from 'mongodb';
+import { cookies } from 'next/headers';
 
-export async function addTask(title: string, dueDate?: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
+async function getUserId() {
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('todo_user')?.value;
+  if (!userId) {
     throw new Error('Not authenticated');
   }
+  return userId;
+}
 
-  const { data, error } = await supabase
-    .from('tasks')
-    .insert({
-      user_id: user.id,
-      title,
-      due_date: dueDate || format(new Date(), 'yyyy-MM-dd'),
-    })
-    .select()
-    .single();
+export async function addTask(title: string, dueDate?: string) {
+  const userId = await getUserId();
+  const db = await getDb();
+  const collection = db.collection('tasks');
 
-  if (error) {
-    console.error('Error adding task:', error);
+  const doc = {
+    title,
+    user_id: userId,
+    due_date: dueDate || format(new Date(), 'yyyy-MM-dd'),
+    created_at: new Date(),
+    completed_at: null,
+  };
+
+  const result = await collection.insertOne(doc);
+  if (!result.acknowledged) {
     throw new Error('Failed to add task');
   }
 
   revalidatePath('/today');
-  return data;
+  return { _id: result.insertedId, ...doc };
 }
 
 export async function toggleTask(taskId: string, isCompleted: boolean) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const userId = await getUserId();
+  const db = await getDb();
+  const collection = db.collection('tasks');
 
-  if (!user) {
-    throw new Error('Not authenticated');
-  }
+  const completedAt = isCompleted ? new Date() : null;
+  const result = await collection.updateOne(
+    { _id: new ObjectId(taskId), user_id: userId },
+    { $set: { completed_at: completedAt } }
+  );
 
-  const completedAt = isCompleted ? new Date().toISOString() : null;
-
-  const { error } = await supabase
-    .from('tasks')
-    .update({ completed_at: completedAt })
-    .eq('id', taskId)
-    .eq('user_id', user.id);
-
-  if (error) {
-    console.error('Error toggling task:', error);
-    throw new Error('Failed to toggle task');
+  if (result.matchedCount === 0) {
+    throw new Error('Task not found');
   }
 
   revalidatePath('/today');
 }
 
 export async function deleteTask(taskId: string) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const userId = await getUserId();
+  const db = await getDb();
+  const collection = db.collection('tasks');
 
-  if (!user) {
-    throw new Error('Not authenticated');
-  }
-
-  const { error } = await supabase
-    .from('tasks')
-    .delete()
-    .eq('id', taskId)
-    .eq('user_id', user.id);
-
-  if (error) {
-    console.error('Error deleting task:', error);
-    throw new Error('Failed to delete task');
+  const result = await collection.deleteOne({ _id: new ObjectId(taskId), user_id: userId });
+  if (result.deletedCount === 0) {
+    throw new Error('Task not found');
   }
 
   revalidatePath('/today');

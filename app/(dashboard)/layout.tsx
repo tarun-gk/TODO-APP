@@ -33,7 +33,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <nav className="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col md:border-r md:border-zinc-200 md:bg-white md:dark:border-zinc-800 md:dark:bg-zinc-900">
         <div className="flex flex-1 flex-col overflow-y-auto pt-5 pb-4">
           <div className="flex flex-shrink-0 items-center px-4">
-            <h1 className="text-2xl font-extrabold text-primary">Antigravity</h1>
+            <h1 className="text-2xl font-extrabold text-primary">Work in Consistency</h1>
           </div>
           <div className="mt-8 flex flex-1 flex-col gap-2 px-2">
             <Link href="/today" className="group flex items-center rounded-md px-2 py-2 text-sm font-medium text-zinc-600 hover:bg-zinc-50 hover:text-zinc-900 dark:text-zinc-300 dark:hover:bg-zinc-800 dark:hover:text-white">

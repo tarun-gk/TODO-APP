@@ -1,26 +1,34 @@
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { format } from 'date-fns';
 import TaskList from '@/components/TaskList';
 import QuickAdd from '@/components/QuickAdd';
 import { Task } from '@/types';
+import { getDb } from '@/lib/mongodb/client';
+import { cookies } from 'next/headers';
 
 export default async function TodayPage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('todo_user')?.value;
 
-  if (!user) {
+  if (!userId) {
     redirect('/login');
   }
 
-  // Fetch today's tasks
+  const db = await getDb();
   const today = format(new Date(), 'yyyy-MM-dd');
-  const { data: tasks, error } = await supabase
-    .from('tasks')
-    .select('*')
-    .eq('user_id', user.id)
-    .eq('due_date', today)
-    .order('position', { ascending: true });
+  
+  // Fetch today's tasks
+  const tasks = await db.collection('tasks')
+    .find({ user_id: userId, due_date: today })
+    .sort({ position: 1 })
+    .toArray();
+
+  // Convert _id to id for the frontend component
+  const serializedTasks = tasks.map(t => ({
+    ...t,
+    id: t._id.toString(),
+    _id: undefined
+  }));
 
   return (
     <div className="space-y-6">
@@ -33,7 +41,7 @@ export default async function TodayPage() {
 
       <QuickAdd />
       
-      <TaskList initialTasks={(tasks as Task[]) || []} />
+      <TaskList initialTasks={(serializedTasks as unknown as Task[]) || []} />
     </div>
   );
 }

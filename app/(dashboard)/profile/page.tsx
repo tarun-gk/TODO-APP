@@ -1,13 +1,13 @@
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { logout } from '@/app/auth/actions';
 import { Button } from '@/components/ui/Button';
+import { cookies } from 'next/headers';
 
 export default async function ProfilePage() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const cookieStore = await cookies();
+  const userId = cookieStore.get('todo_user')?.value;
 
-  if (!user) {
+  if (!userId) {
     redirect('/login');
   }
 
@@ -19,8 +19,8 @@ export default async function ProfilePage() {
 
       <div className="rounded-lg border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900 space-y-4">
         <div>
-          <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">Email</h3>
-          <p className="mt-1 text-base">{user.email}</p>
+          <h3 className="text-sm font-medium text-zinc-500 dark:text-zinc-400">User ID</h3>
+          <p className="mt-1 text-base">{userId}</p>
         </div>
         
         <form action={logout}>

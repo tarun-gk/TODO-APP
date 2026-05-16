@@ -1,8 +1,8 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { z } from 'zod';
+import { cookies } from 'next/headers';
 
 const authSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -18,16 +18,10 @@ export async function login(formData: FormData) {
     return { error: result.error.errors[0].message };
   }
 
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.signInWithPassword({
-    email,
-    password,
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
+  // Mock login: Set a cookie with a demo user ID
+  const userId = process.env.NEXT_PUBLIC_DEMO_USER_ID || 'demo-user-123';
+  const cookieStore = await cookies();
+  cookieStore.set('todo_user', userId, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
   redirect('/today');
 }
@@ -46,27 +40,16 @@ export async function signup(formData: FormData) {
     return { error: 'Display name is required' };
   }
 
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        display_name: displayName,
-      },
-    },
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
+  // Mock signup: Set a cookie with a demo user ID
+  const userId = process.env.NEXT_PUBLIC_DEMO_USER_ID || 'demo-user-123';
+  const cookieStore = await cookies();
+  cookieStore.set('todo_user', userId, { httpOnly: true, secure: process.env.NODE_ENV === 'production' });
 
   redirect('/today');
 }
 
 export async function logout() {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  const cookieStore = await cookies();
+  cookieStore.delete('todo_user');
   redirect('/login');
 }

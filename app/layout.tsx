@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { cn } from '@/lib/utils';
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -16,13 +17,13 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Antigravity | Productivity Gamified',
+  title: 'Work in Consistency | Productivity Gamified',
   description: 'A gamified productivity web app to build momentum and get things done.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Antigravity',
+    title: 'Work in Consistency',
   },
 };
 
@@ -47,6 +48,7 @@ export default function RootLayout({
         <div className="relative flex min-h-screen flex-col">
           <main className="flex-1">{children}</main>
         </div>
+        <Toaster position="bottom-right" />
       </body>
     </html>
   );
